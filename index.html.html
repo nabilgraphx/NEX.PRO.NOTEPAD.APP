@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="bn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEX PRO NOTEPAD APP - Mega Edition</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+            --primary: #a855f7;
+            --accent: #22c55e;
+            --danger: #ef4444;
+        }
+
+        /* --- Themes --- */
+        .theme-midnight {
+            --bg: #020617;
+            --card: #0f172a;
+            --primary: #38bdf8;
+        }
+
+        .theme-golden {
+            --bg: #1c1917;
+            --card: #292524;
+            --primary: #fbbf24;
+        }
+
+        .theme-emerald {
+            --bg: #064e3b;
+            --card: #065f46;
+            --primary: #34d399;
+        }
+
+        .theme-rose {
+            --bg: #4c0519;
+            --card: #881337;
+            --primary: #fb7185;
+        }
+
+        .theme-violet {
+            --bg: #2e1065;
+            --card: #4c1d95;
+            --primary: #a78bfa;
+        }
+
+        .theme-slate {
+            --bg: #334155;
+            --card: #475569;
+            --primary: #94a3b8;
+        }
+
+        .theme-coffee {
+            --bg: #27272a;
+            --card: #3f3f46;
+            --primary: #a1a1aa;
+        }
+
+        .theme-ocean {
+            --bg: #075985;
+            --card: #0c4a6e;
+            --primary: #7dd3fc;
+        }
+
+        .theme-fire {
+            --bg: #450a0a;
+            --card: #7f1d1d;
+            --primary: #f87171;
+        }
+
+        .theme-neon {
+            --bg: #000;
+            --card: #111;
+            --primary: #0f0;
+            --text: #0f0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            transition: 0.5s;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- Fog/Snow Animation --- */
+        #fog-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        #lockScreen {
+            position: fixed;
+            inset: 0;
+            background: var(--bg);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        #mainApp {
+            display: none;
+            padding: 20px;
+            max-width: 1200px;
+            margin: auto;
+            animation: fadeIn 0.8s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: var(--card);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            font-weight: 500;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .btn-save {
+            background: var(--accent) !important;
+            width: 100%;
+            margin-top: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+        }
+
+        /* GK Styling */
+        .gk-box {
+            height: 350px;
+            overflow-y: auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            padding: 10px;
+        }
+
+        .gk-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            transition: 0.3s;
+        }
+
+        .gk-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(5px);
+        }
+
+        .gk-q {
+            color: var(--primary);
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .gk-a {
+            color: var(--accent);
+            display: block;
+        }
+
+        /* Notes Display */
+        .notes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .note-card {
+            background: var(--card);
+            border-radius: 15px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: 0.4s;
+        }
+
+        .note-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .note-card img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        #editor {
+            min-height: 120px;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 12px;
+            outline: none;
+            font-size: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        #preview {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 10px;
+            display: none;
+            margin: 15px 0;
+            border: 2px dashed var(--primary);
+        }
+
+        .pin-dot {
+            width: 18px;
+            height: 18px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            margin: 8px;
+            transition: 0.3s;
+        }
+
+        .pin-dot.filled {
+            background: var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+        }
+    </style>
+</head>
+
+<body class="theme-midnight">
+
+    <canvas id="fog-canvas"></canvas>
+
+    <div id="lockScreen">
+        <i class="fas fa-user-shield fa-4x"
+            style="color:var(--primary); margin-bottom: 20px; filter: drop-shadow(0 0 10px var(--primary));"></i>
+        <h2 style="letter-spacing: 3px;">VAULT SECURE</h2>
+        <div id="dots">
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+            <div class="pin-dot"></div>
+        </div>
+        <div id="numpad" style="display:grid; grid-template-columns: repeat(3, 1fr); gap:15px; margin-top: 20px;"></div>
+    </div>
+
+    <div id="mainApp">
+        <header>
+            <h1 style="font-size: 24px;"><i class="fas fa-microchip"></i> NEX PRO NOTEPAD APP <small
+                    style="font-size: 10px; opacity: 0.5;">v2.0</small></h1>
+            <div style="display:flex; gap:10px">
+                <select onchange="document.body.className = this.value" class="btn"
+                    style="background: var(--primary); color: #000; font-weight: bold;">
+                    <option value="theme-midnight">Midnight</option>
+                    <option value="theme-golden">Golden Era</option>
+                    <option value="theme-emerald">Emerald City</option>
+                    <option value="theme-rose">Desert Rose</option>
+                    <option value="theme-violet">Purple Rain</option>
+                    <option value="theme-slate">Slate Grey</option>
+                    <option value="theme-coffee">Roasted Coffee</option>
+                    <option value="theme-ocean">Ocean Deep</option>
+                    <option value="theme-fire">Fire Burn</option>
+                    <option value="theme-neon">Neon Matrix</option>
+                </select>
+                <button class="btn" onclick="location.reload()" title="Lock App"><i class="fas fa-lock"></i></button>
+            </div>
+        </header>
+
+        <div class="section">
+            <div class="tool-grid">
+                <button class="btn" onclick="genPass()"><i class="fas fa-key"></i> KeyGen</button>
+                <button class="btn" onclick="startVoice()"><i class="fas fa-microphone"></i> Voice</button>
+                <button class="btn" onclick="document.getElementById('fileInp').click()"><i class="fas fa-image"></i>
+                    Gallery</button>
+                <button class="btn" onclick="genQR()"><i class="fas fa-qrcode"></i> QR Link</button>
+            </div>
+            <input type="file" id="fileInp" hidden accept="image/*" onchange="handleImg(this)">
+            <img id="preview">
+            <div id="editor" contenteditable="true" onfocus="if(this.innerText.includes('লিখুন'))this.innerText=''">
+                এখানে আপনার নোট লিখুন...</div>
+            <button class="btn btn-save" onclick="saveNote()"><i class="fas fa-cloud-upload-alt"></i> সুরক্ষিত সেভ করুন
+                (Secure Save)</button>
+        </div>
+
+        <div class="section">
+            <h3 style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;"><i
+                    class="fas fa-brain"></i> GK Encyclopedia</h3>
+            <div class="gk-box" id="gkGrid"></div>
+        </div>
+
+        <h3 style="margin-left: 10px;"><i class="fas fa-layer-group"></i> All Notes</h3>
+        <div class="notes-grid" id="noteDisplay"></div>
+    </div>
+
+    <script>
+        let notes = JSON.parse(localStorage.getItem('megaNotesV3')) || [];
+        let pin = "";
+        let currentBase64 = "";
+
+        // --- Fog Animation Script ---
+        const canvas = document.getElementById('fog-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function initFog() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            for (let i = 0; i < 50; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    radius: Math.random() * 3 + 1,
+                    speed: Math.random() * 1 + 0.5,
+                    opacity: Math.random() * 0.5
+                });
+            }
+        }
+
+        function animateFog() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+                ctx.fill();
+                p.y += p.speed;
+                if (p.y > canvas.height) p.y = -10;
+            });
+            requestAnimationFrame(animateFog);
+        }
+        initFog(); animateFog();
+
+        // --- Numpad Logic ---
+        const pad = document.getElementById('numpad');
+        for (let i = 1; i <= 9; i++) pad.innerHTML += `<button class="btn" onclick="press('${i}')" style="width:70px; height:70px; font-size:24px; border-radius: 50%;">${i}</button>`;
+        pad.innerHTML += `<div></div><button class="btn" onclick="press('0')" style="width:70px; height:70px; font-size:24px; border-radius: 50%;">0</button>`;
+
+        function press(n) {
+            if (pin.length < 4) pin += n;
+            updateDots();
+            if (pin === "1234") {
+                document.getElementById('lockScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                render(); loadGK();
+            } else if (pin.length === 4) {
+                setTimeout(() => { alert("পিন ভুল হয়েছে!"); pin = ""; updateDots(); }, 100);
+            }
+        }
+
+        function updateDots() {
+            const d = document.querySelectorAll('.pin-dot');
+            d.forEach((dot, i) => dot.classList.toggle('filled', i < pin.length));
+        }
+
+        // --- Image Handling with Compression ---
+        function handleImg(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = () => {
+                        // Resize image for better memory storage
+                        const canvasComp = document.createElement('canvas');
+                        const max_size = 800;
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > height) { if (width > max_size) { height *= max_size / width; width = max_size; } }
+                        else { if (height > max_size) { width *= max_size / height; height = max_size; } }
+                        canvasComp.width = width;
+                        canvasComp.height = height;
+                        const ctxComp = canvasComp.getContext('2d');
+                        ctxComp.drawImage(img, 0, 0, width, height);
+                        currentBase64 = canvasComp.toDataURL('image/jpeg', 0.7);
+                        const pre = document.getElementById('preview');
+                        pre.src = currentBase64;
+                        pre.style.display = 'block';
+                    }
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveNote() {
+            const editor = document.getElementById('editor');
+            const txt = editor.innerText.trim();
+            if (!txt && !currentBase64) return;
+
+            const note = {
+                id: Date.now(),
+                content: txt === "এখানে আপনার নোট লিখুন..." ? "" : txt,
+                img: currentBase64,
+                date: new Date().toLocaleString('bn-BD')
+            };
+
+            try {
+                notes.unshift(note);
+                localStorage.setItem('megaNotesV3', JSON.stringify(notes));
+                editor.innerText = "এখানে আপনার নোট লিখুন...";
+                document.getElementById('preview').style.display = 'none';
+                currentBase64 = "";
+                render();
+                alert("সফলভাবে সেভ হয়েছে!");
+            } catch (e) {
+                alert("স্টোরেজ পূর্ণ হয়ে গেছে! কিছু পুরাতন নোট ডিলিট করুন।");
+            }
+        }
+
+        function render() {
+            const div = document.getElementById('noteDisplay');
+            div.innerHTML = notes.map(n => `
+            <div class="note-card">
+                ${n.img ? `<img src="${n.img}" onclick="window.open(this.src)">` : ''}
+                <small style="opacity:0.5; font-size:10px;"><i class="far fa-calendar-alt"></i> ${n.date}</small>
+                <div style="white-space: pre-wrap; margin-top:10px; line-height:1.5;">${n.content}</div>
+                <button class="btn" onclick="del(${n.id})" style="margin-top:15px; background:var(--danger); font-size:12px; height:35px; width:100%;">
+                    <i class="fas fa-trash-alt"></i> মুছে ফেলুন
+                </button>
+            </div>
+        `).join('');
+        }
+
+        function del(id) {
+            if (confirm("মুছে ফেলতে চান?")) {
+                notes = notes.filter(n => n.id !== id);
+                localStorage.setItem('megaNotesV3', JSON.stringify(notes));
+                render();
+            }
+        }
+
+        // --- Bonus Tools ---
+        function genPass() {
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789#@$%";
+            let p = "";
+            for (let i = 0; i < 10; i++) p += chars.charAt(Math.floor(Math.random() * chars.length));
+            document.getElementById('editor').innerText = "Generated Pass: " + p;
+        }
+
+        function startVoice() {
+            const rec = new (window.webkitSpeechRecognition || window.SpeechRecognition)();
+            rec.lang = 'bn-BD';
+            rec.onresult = e => document.getElementById('editor').innerText = e.results[0][0].transcript;
+            rec.start();
+        }
+
+        function genQR() {
+            const txt = document.getElementById('editor').innerText;
+            if (txt) window.open(`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(txt)}`);
+        }
+
+        function loadGK() {
+            const gkData = [
+                { q: "বাংলাদেশের স্বাধীনতার ঘোষক কে?", a: "বঙ্গবন্ধু শেখ মুজিবুর রহমান" },
+                { q: "পদ্মা সেতুর দৈর্ঘ্য কত?", a: "৬.১৫ কিলোমিটার" },
+                { q: "বিজয় দিবস কবে?", a: "১৬ ডিসেম্বর" },
+                { q: "বাংলাদেশের জাতীয় পশু কোনটি?", a: "রয়্যাল বেঙ্গল টাইগার" },
+                { q: "জাতীয় সংসদ ভবনের স্থপতি কে?", a: "লুই আই কান" },
+                { q: "সেন্টমার্টিন কোন জেলায় অবস্থিত?", a: "কক্সবাজার" },
+                { q: "বাংলাদেশের রাষ্ট্রীয় নাম কী?", a: "গণপ্রজাতন্ত্রী বাংলাদেশ" },
+                { q: "মুক্তিযুদ্ধে বীরশ্রেষ্ঠ কতজন?", a: "৭ জন" },
+                { q: "বাংলাদেশের জাতীয় কবির নাম কী?", a: "কাজী নজরুল ইসলাম" },
+                { q: "ঢাকা বাংলার রাজধানী হয় কত সালে?", a: "১৬১০ সালে প্রথম" },
+
+
+
+
+
+
+
+
+                { q: "বাংলাদেশের স্বাধীনতার ঘোষক কে?", a: "বঙ্গবন্ধু শেখ মুজিবুর রহমান" },
+                { q: "বাংলাদেশের জাতীয় ফলের নাম কী?", a: "কাঁঠাল" },
+                { q: "পদ্মা সেতুর দৈর্ঘ্য কত?", a: "৬.১৫ কিলোমিটার" },
+                { q: "বাংলাদেশের সংবিধান কবে কার্যকর হয়?", a: "১৬ ডিসেম্বর ১৯৭২" },
+                { q: "প্রথম পতাকা উত্তোলন করা হয় কবে?", a: "২ মার্চ ১৯৭১" },
+                { q: "বিজয় দিবস কবে পালিত হয়?", a: "১৬ ডিসেম্বর" },
+                { q: "শহীদ মিনার উদ্বোধন করা হয় কবে?", a: "২৩ ফেব্রুয়ারি ১৯৫২" },
+                { q: "বাংলাদেশের একমাত্র প্রবাল দ্বীপ কোনটি?", a: "সেন্টমার্টিন" },
+                { q: "ব্রহ্মপুত্র নদ কোথা থেকে উৎপন্ন হয়েছে?", a: "তিব্বতের মানস সরোবর থেকে" },
+                { q: "বাংলাদেশের জাতীয় দিবস কোনটি?", a: "২৬ মার্চ" },
+                { q: "বাংলাদেশের সর্বোচ্চ শৃঙ্গের নাম কী?", a: "তাজিংডং (বিজয়)" },
+                { q: "প্রথম ডিজিটাল জেলা কোনটি?", a: "যশোর" },
+                { q: "বঙ্গবন্ধু স্যাটেলাইট-১ কবে উৎক্ষেপণ করা হয়?", a: "১২ মে ২০১৮" },
+                { q: "বাংলাদেশের জাতীয় পাখির নাম কী?", a: "দোয়েল" },
+                { q: "সুন্দরবনের আয়তন কত?", a: "প্রায় ৬০১৭ বর্গ কিমি (বাংলাদেশ অংশ)" },
+                { q: "ঢাকা কবে প্রথম বাংলার রাজধানী হয়?", a: "১৬১০ সালে" },
+                { q: "বাংলাদেশের বৃহত্তম বিল কোনটি?", a: "চলন বিল" },
+                { q: "জাতীয় সংসদ ভবনের স্থপতি কে?", a: "লুই আই কান" },
+                { q: "মুক্তিযুদ্ধে বীরশ্রেষ্ঠ খেতাব কয়জন পান?", a: "৭ জন" },
+                { q: "বাংলাদেশের লোকশিল্প জাদুঘর কোথায়?", a: "সোনারগাঁও" },
+                { q: "বাংলাদেশের দীর্ঘতম নদী কোনটি?", a: "মেঘনা (অভ্যন্তরীণ)" },
+                { q: "গঙ্গা নদী বাংলাদেশে কী নামে পরিচিত?", a: "পদ্মা" },
+                { q: "বাংলাদেশের জাতীয় বৃক্ষ কোনটি?", a: "আম গাছ" },
+                { q: "মুজিবনগর স্মৃতিসৌধ কোথায় অবস্থিত?", a: "মেহেরপুর" },
+                { q: "কান্তজিউ মন্দির কোথায় অবস্থিত?", a: "দিনাজপুর" },
+                { q: "একমাত্র পাহাড়ী দ্বীপ কোনটি?", a: "মহেশখালী" },
+                { q: "বাংলাদেশের জাতীয় মাছ কোনটি?", a: "ইলিশ" },
+                { q: "মাথাপিছু আয়ে বাংলাদেশের অবস্থান কত?", a: "দক্ষিণ এশিয়ায় ২য় (২০২৪ ডাটা)" },
+                { q: "শহীদ বুদ্ধিজীবী দিবস কবে?", a: "১৪ ডিসেম্বর" },
+                { q: "মুক্তিযুদ্ধে সেক্টর কয়টি ছিল?", a: "১১টি" },
+                { q: "বাংলাদেশের মানচিত্র প্রথম কে আঁকেন?", a: "জেমস রেনেল" },
+                { q: "বাংলাদেশের শীতলতম স্থান কোনটি?", a: "শ্রীমঙ্গল" },
+                { q: "প্রথম বাংলা সিনেমার নাম কী?", a: "মুখ ও মুখোশ" },
+                { q: "বাংলাদেশের জাতীয় বন কোনটি?", a: "সুন্দরবন" },
+                { q: "বাংলাদেশের মুদ্রার নাম কী?", a: "টাকা" },
+                { q: "ঢাকার প্রাচীন নাম কী?", a: "জাহাঙ্গীরনগর" },
+                { q: "বাংলাদেশের রণসঙ্গীতের রচয়িতা কে?", a: "কাজী নজরুল ইসলাম" },
+                { q: "জাতীয় স্মৃতিসৌধ কোথায় অবস্থিত?", a: "সাভার, ঢাকা" },
+                { q: "বাংলাদেশের সর্বোচ্চ আদালত কোনটি?", a: "সুপ্রিম কোর্ট" },
+                { q: "বাংলাদেশের প্রথম প্রধানমন্ত্রী কে?", a: "তাজউদ্দীন আহমদ" },
+                { q: "নীলগিরি পর্যটন কেন্দ্র কোথায়?", a: "বান্দরবান" },
+                { q: "বাংলাদেশের বৃহত্তম দ্বীপ কোনটি?", a: "ভোলা" },
+                { q: "এভারেস্ট জয়ী প্রথম বাংলাদেশি কে?", a: "মুসা ইব্রাহীম" },
+                { q: "আন্তর্জাতিক মাতৃভাষা দিবস কবে?", a: "২১ ফেব্রুয়ারি" },
+                { q: "বাংলাদেশের চা গবেষণা কেন্দ্র কোথায়?", a: "শ্রীমঙ্গল" },
+                { q: "দেশের প্রথম উড়াল সেতু কোনটি?", a: "মগবাজার-মৌচাক ফ্লাইওভার (বা ঢাকা এলিভেটেড)" },
+                { q: "কুয়াকাটা সমুদ্র সৈকত কোথায়?", a: "পটুয়াখালী" },
+                { q: "বাংলাদেশের জাতীয় পশু কোনটি?", a: "রয়্যাল বেঙ্গল টাইগার" },
+                { q: "বদ্বীপ পরিকল্পনা ২১০০ কিসের সাথে যুক্ত?", a: "জলবায়ু ও পানি ব্যবস্থাপনা" },
+                { q: "জাতিসংঘে বাংলাদেশ কত সালে সদস্যপদ পায়?", a: "১৯৭৪ সালে (২৯তম অধিবেশনে)" },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            ];
+            document.getElementById('gkGrid').innerHTML = gkData.map(item => `
+            <div class="gk-item">
+                <span class="gk-q">প্রশ্ন: ${item.q}</span>
+                <span class="gk-a">উত্তর: ${item.a}</span>
+            </div>
+        `).join('');
+        }
+    </script>
+</body>
+
+</html>
